@@ -16,7 +16,7 @@ def normalized_svm_data_protected():
 def normalized_seq2seq_dataset():
     seq2seq_data = pd.read_csv("seq2seq.csv", sep=',')
     seq2seq_data = (seq2seq_data-seq2seq_data.min())/(seq2seq_data.max()-seq2seq_data.min())
-    seq2seq_data.to_csv("normalized_seq2swq.csv")
+    seq2seq_data.to_csv("normalized_seq2seq.csv")
 
 
 normalized_svm_data_stream()
