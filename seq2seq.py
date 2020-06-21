@@ -1,4 +1,6 @@
 import pandas as pd
+import numpy as np
+import random
 from keras.models import Sequential
 from keras.layers.recurrent import LSTM
 from keras.layers.wrappers import TimeDistributed
@@ -16,7 +18,44 @@ column_index = [
 
 data = pd.read_csv("seq2seq.csv", sep=',')
 data = (data-data.min())/(data.max()-data.min())
-data.to_csv("normalized_seq2seq.csv")
+# data.to_csv("normalized_seq2seq.csv")
+
+state_input_1 = data.loc[:, column_index[:20]].values
+state_input_2 = data.loc[:, column_index[20:40]].values
+state_input_3 = data.loc[:, column_index[40:60]].values
+target_4 = data.loc[:, column_index[60]].values
+target_5 = data.loc[:, column_index[61]].values
+target_6 = data.loc[:, column_index[62]].values
+target_7 = data.loc[:, column_index[63]].values
+target_8 = data.loc[:, column_index[64]].values
+target_9 = data.loc[:, column_index[65]].values
+target_10 = data.loc[:, column_index[66]].values
+
+input_train = []
+input_test = []
+output_train = []
+output_test = []
+
+for i in range(len(state_input_1)):
+    random_number = random.randint(0, 9)
+    input_temp = np.array([state_input_1[i], state_input_2[i], state_input_3[i]])
+    output_temp = np.array(
+        [
+            np.array([target_4[i]]), np.array([target_5[i]]), np.array([target_6[i]]), np.array([target_7[i]]),
+            np.array([target_8[i]]), np.array([target_9[i]]), np.array([target_10[i]])
+        ]
+    )
+    if random_number < 7:
+        input_train.append(input_temp)
+        output_train.append(output_temp)
+    else:
+        input_test.append(input_temp)
+        output_test.append(output_temp)
+
+input_train = np.array(input_train)
+input_test = np.array(input_test)
+output_train = np.array(output_train)
+output_test = np.array(output_test)
 
 encode_steps = 3
 encode_features = 20
@@ -26,7 +65,7 @@ decode_steps = 7
 model = Sequential()
 
 # Encoder(第一个 LSTM)
-model.add(LSTM(input_shape=(None, encode_steps, encode_features), units=45, return_sequences=False))
+model.add(LSTM(input_shape=(encode_steps, encode_features), units=1, return_sequences=False, dropout=0.2))
 
 model.add(Dense(target, activation="relu"))
 
@@ -34,11 +73,20 @@ model.add(Dense(target, activation="relu"))
 model.add(RepeatVector(target*decode_steps))
 
 # Decoder(第二个 LSTM)
-model.add(LSTM(input_shape=(None, decode_steps, target), units=105, return_sequences=True))
+model.add(LSTM(input_shape=(decode_steps, target), units=1, return_sequences=True, dropout=0.2))
 
 # TimeDistributed 是为了保证 Dense 和 Decoder 之间的一致
-model.add(TimeDistributed(Dense(output_dim=7, activation="linear")))
+model.add(TimeDistributed(Dense(units=1, activation="linear")))
 
 model.compile(loss="mse", optimizer='adam')
 
 model.summary()
+
+model.fit(
+    input_train, output_train,
+    batch_size=1000, epochs=80,
+    validation_data=(input_test, output_test),
+    verbose=1, shuffle=True
+)
+
+model.save("seq2seq.h5")
