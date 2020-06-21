@@ -1,4 +1,4 @@
-CPU_Utilization,Frequency,IPC,Misses,LLC,MBL,Memory_Footprint,Virt_Memory,Res_Memory,Allocated_Cache,protected
+CPU_Utilization,Frequency,IPC,Misses,LLC,MBL,Memory_Footprint,Virt_Memory,Res_Memory,Allocated_Cache,Protected
 100.0,2799.9990000000003,3.41,1783.0,2808.0,206.9,0.3,814764.0,801708.0,2.25,0
 100.0,2800.0959999999995,2.97,19928.0,4536.0,1806.7,0.3,855696.0,842148.0,2.25,0
 100.0,2800.06,2.72,35867.0,6480.0,2498.6,0.3,814764.0,801708.0,2.25,0
