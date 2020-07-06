@@ -1,5 +1,4 @@
 import pandas as pd
-import pandas_profiling
 from sklearn import svm
 import joblib
 
