@@ -57,10 +57,10 @@ input_test = np.array(input_test)
 output_train = np.array(output_train)
 output_test = np.array(output_test)
 
-encode_steps = 3
+encode_steps = 4
 encode_features = 20
 target = 1
-decode_steps = 7
+decode_steps = 13
 
 model = Sequential()
 
@@ -81,7 +81,7 @@ model.add(TimeDistributed(Dense(units=1, activation="linear")))
 model.compile(loss="mse", optimizer='adam')
 
 model.summary()
-
+"""
 model.fit(
     input_train, output_train,
     batch_size=1000, epochs=80,
@@ -90,3 +90,4 @@ model.fit(
 )
 
 model.save("seq2seq.h5")
+"""
