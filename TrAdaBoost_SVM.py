@@ -12,6 +12,7 @@ import joblib
 # LabelA 辅助训练样本标签
 # Test  测试样本
 # N 迭代次数
+"""
 def tradaboost(trans_S, trans_A, label_S, label_A, test, N):
     trans_data = np.concatenate((trans_A, trans_S), axis=0)
     trans_label = np.concatenate((label_A, label_S), axis=0)
@@ -99,8 +100,15 @@ def calculate_error_rate(label_R, label_H, weight):
 
     print(weight[:, 0] / total)
     print(np.abs(label_R - label_H))
+    print(total)
+    for i in range(len(label_R)):
+        print(str(label_R[i])+','+str(label_H[i]))
+        print(label_R[i]-label_H[i])
+    print(label_H)
     return np.sum(weight[:, 0] / total * np.abs(label_R - label_H))
 """
+
+
 class TrAdaboost:
     def __init__(self, base_classifier=svm.SVC(), iter=10):
         self.base_classifier = base_classifier
@@ -137,7 +145,7 @@ class TrAdaboost:
                                                     result[row_source:, i],
                                                     weights[row_source:, :])
 
-            print("Error Rate in target data: ", error_rate, 'round:', i, 'all_round:', self.N)
+            print("Error Rate in target data: ", error_rate, 'round:', i+1, 'all_round:', self.N)
 
             if error_rate > 0.5:
                 error_rate = 0.5
@@ -202,9 +210,7 @@ class TrAdaboost:
         sum_weight = np.sum(weight_target)
         return np.sum(weight_target[:, 0] / sum_weight * np.abs(y_target - y_predict))
 
-    def get_last_classfier(self):
-        return self.classifiers
-"""
+
 
 # 数据处理
 """
@@ -267,7 +273,12 @@ svm_classifier = svm.SVC()
 svm_classifier.fit(input_train, output_train)
 print(svm_classifier.score(input_test, output_test))
 
-tradaboost(original_train_input, input_train, original_train_output, output_train, input_test, 20)
-svm_classifier = joblib.load('stream_or_not_43.pkl')
-print(svm_classifier.score(input_test, output_test))
+classfier = TrAdaboost(svm.SVC(), 10)
+classfier.fit(original_train_input, input_train, original_train_output, output_train)
+predicted_result = classfier.predict(input_test)
+acc = 0
+for i in range(len(predicted_result)):
+    if predicted_result[i] == output_test[i]:
+        acc += 1
+print(acc/len(predicted_result))
 
