@@ -1,5 +1,6 @@
 import pandas as pd
 from sklearn import svm
+from sklearn import tree
 import joblib
 
 data = pd.read_csv("SVM_dataset\\213\\stream_213.csv", sep=',')
@@ -25,7 +26,7 @@ print('normalization finished')
 test_input_features = test_data.loc[:, features_arr[:9]].values
 test_output_target = test_data.loc[:, features_arr[9:]].values
 
-classifier = svm.SVC()
+classifier = tree.DecisionTreeClassifier(criterion="gini", max_features="log2", splitter="random")
 classifier.fit(train_input_features, train_output_target)
 print(classifier.score(test_input_features, test_output_target))
 

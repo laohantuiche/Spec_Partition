@@ -12,7 +12,9 @@ import joblib
 # LabelA 辅助训练样本标签
 # Test  测试样本
 # N 迭代次数
-"""
+# """
+
+
 def tradaboost(trans_S, trans_A, label_S, label_A, test, N):
     trans_data = np.concatenate((trans_A, trans_S), axis=0)
     trans_label = np.concatenate((label_A, label_S), axis=0)
@@ -46,7 +48,9 @@ def tradaboost(trans_S, trans_A, label_S, label_A, test, N):
 
         result_label[:, i] = train_classify(trans_data, trans_label, test_data, P)
         print('result,{r},{ra},{rs},{idex},{s}'.format(r=result_label[:, i], ra=row_A, rs=row_S, idex=i, s=result_label.shape))
-
+        print()
+        for j in range(len(result_label[row_A:row_A + row_S, i])):
+            print(result_label[j, i])
         error_rate = calculate_error_rate(label_S, result_label[row_A:row_A + row_S, i],
                                           weights[row_A:row_A + row_S, :])
         print('Error rate:{er}'.format(er=error_rate))
@@ -99,16 +103,17 @@ def calculate_error_rate(label_R, label_H, weight):
     total = np.sum(weight)
 
     print(weight[:, 0] / total)
-    print(np.abs(label_R - label_H))
-    print(total)
+
+    temp_arr = []
     for i in range(len(label_R)):
-        print(str(label_R[i])+','+str(label_H[i]))
-        print(label_R[i]-label_H[i])
-    print(label_H)
+        temp_arr.append(label_R[i][0])
+    label_R = np.array(temp_arr)
+    print(np.abs(label_R - label_H))
     return np.sum(weight[:, 0] / total * np.abs(label_R - label_H))
+# """
+
+
 """
-
-
 class TrAdaboost:
     def __init__(self, base_classifier=svm.SVC(), iter=10):
         self.base_classifier = base_classifier
@@ -209,7 +214,7 @@ class TrAdaboost:
     def _calculate_error_rate(self, y_target, y_predict, weight_target):
         sum_weight = np.sum(weight_target)
         return np.sum(weight_target[:, 0] / sum_weight * np.abs(y_target - y_predict))
-
+"""
 
 
 # 数据处理
@@ -273,12 +278,17 @@ svm_classifier = svm.SVC()
 svm_classifier.fit(input_train, output_train)
 print(svm_classifier.score(input_test, output_test))
 
+"""
 classfier = TrAdaboost(svm.SVC(), 10)
 classfier.fit(original_train_input, input_train, original_train_output, output_train)
 predicted_result = classfier.predict(input_test)
+"""
+predicted_result = tradaboost(original_train_input, input_train, original_train_output, output_train, input_train, 2)
+svm_classifier = joblib.load('stream_or_not_43.pkl')
+print(svm_classifier.score(input_train, output_train))
 acc = 0
 for i in range(len(predicted_result)):
-    if predicted_result[i] == output_test[i]:
+    if predicted_result[i] == output_train[i]:
         acc += 1
 print(acc/len(predicted_result))
 
