@@ -44,11 +44,10 @@ def tradaboost(trans_S, trans_A, label_S, label_A, test, N):
     test_data = np.asarray(test_data, order='C')
 
     for i in range(N):
-        P = calculate_P(weights, trans_label)
+        P = calculate_P(weights)
 
-        result_label[:, i] = train_classify(trans_data, trans_label, test_data, P)
+        result_label[:, i] = train_classify(trans_data, trans_label, test_data, P, i+1)
         print('result,{r},{ra},{rs},{idex},{s}'.format(r=result_label[:, i], ra=row_A, rs=row_S, idex=i, s=result_label.shape))
-        print()
         for j in range(len(result_label[row_A:row_A + row_S, i])):
             print(result_label[j, i])
         error_rate = calculate_error_rate(label_S, result_label[row_A:row_A + row_S, i],
@@ -65,13 +64,14 @@ def tradaboost(trans_S, trans_A, label_S, label_A, test, N):
 
         # 调整源域样本权重
         for j in range(row_S):
-            weights[row_A + j] = weights[row_A + j] * np.power(bata_T[0, i],
-                                                               (-np.abs(result_label[row_A + j, i] - label_S[j])))
+            weights[row_A + j] = weights[row_A + j] * np.power(bata_T[0, i], -np.abs(result_label[row_A + j, i] - label_S[j]))
 
         # 调整辅域样本权重
         for j in range(row_A):
             weights[j] = weights[j] * np.power(bata, np.abs(result_label[j, i] - label_A[j]))
-    # print bata_T
+    print('bata_all', bata_T)
+    print(type(bata_T))
+    print(type(bata_T[0]))
     for i in range(row_T):
         # 跳过训练数据的标签
         left = np.sum(
@@ -87,15 +87,15 @@ def tradaboost(trans_S, trans_A, label_S, label_A, test, N):
     return predict
 
 
-def calculate_P(weights, label):
+def calculate_P(weights):
     total = np.sum(weights)
     return np.asarray(weights / total, order='C')
 
 
-def train_classify(trans_data, trans_label, test_data, P):
-    clf = svm.SVC()
+def train_classify(trans_data, trans_label, test_data, P, idex):
+    clf = tree.DecisionTreeClassifier(criterion="gini", max_features="log2", splitter="random", max_depth=15)
     clf.fit(trans_data, trans_label, sample_weight=P[:, 0])
-    joblib.dump(clf, 'stream_or_not_43.pkl')
+    # joblib.dump(clf, '43_model_file\\stream_{item}.pkl'.format(item=idex))
     return clf.predict(test_data)
 
 
@@ -219,9 +219,9 @@ class TrAdaboost:
 
 # 数据处理
 """
-data_file = open('SVM_dataset\\43\\sensitive_43.csv', 'r')
-test_data_file = open('SVM_dataset\\43\\sensitive_43_test.csv', 'w')
-train_data_file = open('SVM_dataset\\43\\sensitive_43_train.csv', 'w')
+data_file = open('DT_dataset\\43\\sensitive_43.csv', 'r')
+test_data_file = open('DT_dataset\\43\\sensitive_43_test.csv', 'w')
+train_data_file = open('DT_dataset\\43\\sensitive_43_train.csv', 'w')
 data = data_file.readlines()
 train_data_file.write(data[0])
 test_data_file.write(data[0])
@@ -239,8 +239,8 @@ data_file.close()
 train_data_file.close()
 test_data_file.close()
 
-small_data_file = open('SVM_dataset\\213\\stream_213_small_train.csv', 'w')
-data_file = open('SVM_dataset\\213\\stream_213_train.csv', 'r')
+small_data_file = open('DT_dataset\\213\\stream_213_small_train.csv', 'w')
+data_file = open('DT_dataset\\213\\stream_213_train.csv', 'r')
 data = data_file.readlines()
 small_data_file.write(data[0])
 for i in range(1, len(data)):
@@ -252,21 +252,21 @@ small_data_file.close()
 
 # 测试
 
-original_data = pd.read_csv('SVM_dataset\\213\\stream_213.csv', sep=',')
+original_data = pd.read_csv('DT_dataset\\213\\stream_213.csv', sep=',')
 
 features_arr = ["Frequency", "IPC", "Misses", "LLC", "MBL", "Memory_Footprint",
                 "Virt_Memory", "Res_Memory", "Allocated_Cache", "stream"]
-test_data = pd.read_csv('SVM_dataset\\43\\stream_43_test.csv', sep=',')
+test_data = pd.read_csv('DT_dataset\\43\\stream_43.csv', sep=',')
 test_data = (test_data-original_data.min())/(original_data.max()-original_data.min())
 input_test = test_data.loc[:, features_arr[:9]].values
 output_test = test_data.loc[:, features_arr[9:]].values
 
-train_data = pd.read_csv('SVM_dataset\\43\\stream_43_train.csv', sep=',')
+train_data = pd.read_csv('DT_dataset\\43\\stream_43_train.csv', sep=',')
 train_data = (train_data-original_data.min())/(original_data.max()-original_data.min())
 input_train = train_data.loc[:, features_arr[:9]].values
 output_train = train_data.loc[:, features_arr[9:]].values
 
-original_train_data = pd.read_csv('SVM_dataset\\213\\stream_213_small_train.csv', sep=',')
+original_train_data = pd.read_csv('DT_dataset\\213\\stream_213_small_train.csv', sep=',')
 original_train_data = (original_train_data-original_data.min())/(original_data.max()-original_data.min())
 # data.to_csv("normalized_ST_or_CS.csv")
 original_train_input = train_data.loc[:, features_arr[:9]].values
@@ -274,8 +274,8 @@ original_train_output = train_data.loc[:, features_arr[9:]].values
 
 svm_classifier = joblib.load('stream_or_not_213.pkl')
 print(svm_classifier.score(input_test, output_test))
-svm_classifier = svm.SVC()
-svm_classifier.fit(input_train, output_train)
+dt_classifier = tree.DecisionTreeClassifier(criterion="gini", max_features="log2", splitter="random", max_depth=15)
+dt_classifier.fit(input_train, output_train)
 print(svm_classifier.score(input_test, output_test))
 
 """
@@ -283,12 +283,47 @@ classfier = TrAdaboost(svm.SVC(), 10)
 classfier.fit(original_train_input, input_train, original_train_output, output_train)
 predicted_result = classfier.predict(input_test)
 """
-predicted_result = tradaboost(original_train_input, input_train, original_train_output, output_train, input_train, 2)
-svm_classifier = joblib.load('stream_or_not_43.pkl')
-print(svm_classifier.score(input_train, output_train))
+predicted_result = tradaboost(original_train_input, input_train, original_train_output, output_train, input_test, 10)
 acc = 0
 for i in range(len(predicted_result)):
-    if predicted_result[i] == output_train[i]:
+    if predicted_result[i] == output_test[i]:
         acc += 1
 print(acc/len(predicted_result))
 
+clfs = []
+for i in range(10):
+    clf = joblib.load('43_model_file\\stream_{item}.pkl'.format(item=i+1))
+    clfs.append(clf)
+
+
+def predict(x_test):
+    result = np.ones([x_test.shape[0], 11])
+    predict = []
+
+    i = 0
+    for classifier in clfs:
+        y_pred = classifier.predict(x_test)
+        result[:, i] = y_pred
+        i += 1
+
+    beta_all = np.array([0.00739767, 0.03138211, 0.0448809,  0.09496183, 0.00436978, 0.01577134, 0.01955407, 0.07664293, 0.02536776, 0.00372462])
+    beta_all = np.array([beta_all])
+
+    for i in range(x_test.shape[0]):
+        left = np.sum(result[i, int(np.ceil(10 / 2)): 10] *
+                      np.log(1 / beta_all[0, int(np.ceil(10 / 2)):10]))
+
+        right = 0.5 * np.sum(np.log(1 / beta_all[0, int(np.ceil(10 / 2)): 10]))
+
+        if left >= right:
+            predict.append(1)
+        else:
+            predict.append(0)
+    return predict
+
+predicted_result = predict(input_test)
+acc = 0
+for i in range(len(predicted_result)):
+    if predicted_result[i] == output_test[i]:
+        acc += 1
+print(acc/len(predicted_result))
