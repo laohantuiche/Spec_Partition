@@ -7,7 +7,7 @@ from keras.layers.recurrent import LSTM
 from keras.layers.wrappers import TimeDistributed
 from keras.layers.core import Dense, RepeatVector
 """
-overall_file = open('Seq2seq_dataset\\213\\seq2seq_213.csv', 'r')
+overall_file = open('Seq2seq_dataset\\213\\seq2seq.csv', 'r')
 data = overall_file.readlines()
 new_data = []
 for i, item in enumerate(data):
@@ -32,6 +32,7 @@ for i in range(1, len(new_data)):
         test_file.write(new_data[i])
 """
 
+# """
 column_index = [
     'CPU_Utilization_1_sen', 'Frequency_1_sen', 'IPC_1_sen', 'Misses_1_sen', 'LLC_1_sen', 'MBL_1_sen', 'Memory_Footprint_1_sen', 'Virt_Memory_1_sen', 'Res_Memory_1_sen', 'Weighted_Speedup_1_sen',
     'CPU_Utilization_1_stream', 'Frequency_1_stream', 'IPC_1_stream', 'Misses_1_stream', 'LLC_1_stream', 'MBL_1_stream', 'Memory_Footprint_1_stream', 'Virt_Memory_1_stream', 'Res_Memory_1_stream', 'Weighted_Speedup_1_stream',
@@ -50,7 +51,7 @@ column_index = [
 ]
 
 data = pd.read_csv("Seq2seq_dataset\\213\\seq2seq_213.csv", sep=',')
-print(data.loc[:, column_index[120:]].max())
+# print(data.loc[:, column_index[120:]].max())
 # print(data.loc[:, column_index[120:]].min())
 train_data = pd.read_csv("Seq2seq_dataset\\213\\seq2seq_213_train.csv", sep=',')
 test_data = pd.read_csv("Seq2seq_dataset\\213\\seq2seq_213_test.csv", sep=',')
@@ -161,8 +162,8 @@ model.fit(
 
 print(model.evaluate(input_test, output_test))
 
-model.save("seq2seq.h5")
-
+model.save_weights("seq2seq_weights.h5")
+# """
 """
 column_index = [
     "CPU_Utilization_1_cs", "Frequency_1_cs", "IPC_1_cs", "Misses_1_cs", "LLC_1_cs", "MBL_1_cs", "Memory_Footprint_1_cs", "Virt_Memory_1_cs", "Res_Memory_1_cs", "Weighted_Speedup_1_cs",

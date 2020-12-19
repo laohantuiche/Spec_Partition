@@ -2,6 +2,7 @@ import pandas as pd
 from sklearn import svm
 from sklearn import tree
 import joblib
+from sklearn import metrics
 
 data = pd.read_csv("DT_dataset\\213\\stream_213.csv", sep=',')
 """
@@ -26,11 +27,20 @@ print('normalization finished')
 test_input_features = test_data.loc[:, features_arr[:9]].values
 test_output_target = test_data.loc[:, features_arr[9:]].values
 
-classifier = tree.DecisionTreeClassifier(criterion="gini", max_features="log2", splitter="random", max_depth=15)
-classifier.fit(train_input_features, train_output_target)
-print(classifier.score(test_input_features, test_output_target))
+# classifier = tree.DecisionTreeClassifier(criterion="gini", max_features="log2", splitter="random", max_depth=15)
+# classifier.fit(train_input_features, train_output_target)
+# print(classifier.score(test_input_features, test_output_target))
 
-joblib.dump(classifier, "stream_or_not_213.pkl")
+# classifier = joblib.load('stream_or_not_213.pkl')
+
+classifier = svm.SVC(kernel='linear')
+classifier.fit(train_input_features, train_output_target)
+prediction = classifier.predict(test_input_features)
+
+print(metrics.accuracy_score(test_output_target, prediction))
+print(metrics.precision_score(test_output_target, prediction, average='macro'))
+print(metrics.recall_score(test_output_target, prediction, average='macro'))
+# joblib.dump(classifier, "stream_or_not_213.pkl")
 
 """
 overall_file = open('DT_dataset\\213\\sensitive_213.csv', 'r')
